@@ -374,7 +374,35 @@ class FarmsList(Command):
 
 	def run(self):
 		print self.pretty(self.connection.list_farms)
-		
+
+
+class GlobalVariableSet(Command):
+	name = "set-global-variable"
+	help = "{{-f farm-id | -n farm-name} | farm-role-id}"
+
+	def __init__(self, config, *args):
+		super(GlobalVariableSet, self).__init__(config, *args)
+
+		# Require or one the other (farm or farmrole)
+		cmd_args = (self.options.farm_id, self.options.farm_role_id)
+		if not any(cmd_args) or all(cmd_args):
+			print self.parser.format_help(TitledHelpFormatter())
+			sys.exit(1)
+
+		self.require(self.options.key, self.options.value)
+
+	@classmethod
+	def inject_options(cls, parser):
+		parser.add_option("-f", "--farm-id", dest="farm_id", default=None, help="Farm ID")
+		parser.add_option("-n", "--farm-name", dest="farm_name", default=None, help="The name of farm could be used INSTEAD of ID")
+		parser.add_option("-r", "--farm-role-id", dest="farm_role_id", default=None, help="Farm Role ID. If specified, a farm role variable will defined, otherwise, we'll define a farm variable")
+		parser.add_option("-k", "--variable-key", dest="key", default=None, help="The key, or name, of the global variable you want to set.")
+		parser.add_option("-v", "--variable-value", dest="value", default=None, help="The value you want to set the global variable to.")
+
+	def run(self):
+		self.connection.set_global_variable(self.options.farm_id, self.options.farm_role_id,
+			self.options.key, self.options.value)
+
 
 class ScriptsList(Command):
 	name = 'list-scripts'

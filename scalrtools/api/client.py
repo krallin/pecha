@@ -237,6 +237,18 @@ class ScalrConnection(object):
 		@return Farm[]
 		"""
 		return self._request("FarmsList", response_reader=self._read_list_farms_response)
+
+	def set_global_variable(self, farm_id, farm_role_id, key, value):
+		"""
+		@return Result
+		"""
+		params = {"ParamName": key, "ParamValue": value}
+		for name, arg in (("FarmID", farm_id), ("FarmRoleID", farm_role_id)):
+			if arg:
+				params[name] = arg
+
+		return self._request("GlobalVariableSet", params=params,
+			response_reader=self._read_set_global_variable_response)
 			
 			
 	def get_farm_status(self, id=None, name=None):
@@ -677,7 +689,10 @@ class ScalrConnection(object):
 	
 	def _read_list_farms_response(self, xml):
 		return self._read_response(xml, node_name='FarmSet', cls=types.Farm)
-	
+
+	def _read_set_global_variable_response(self, xml):
+		return self._read_response(xml, node_name='GlobalVariableSetResponse',
+			cls=types.Result, simple_response=True)
 	
 	def _read_list_roles_response(self, xml):
 		return self._read_response(xml, node_name='RoleSet', cls=types.Role)
